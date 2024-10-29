@@ -1,0 +1,18 @@
+[
+    {
+        "pregunta": "¿Cual es el plazo para devolver un producto?",
+        "respuesta": "El plazo para devolver un producto es de 27 dias desde la fecha de compra."
+    },
+    {
+        "pregunta": "¿Hacen envios a todo el pais?",
+        "respuesta": "Si, realizamos envíos a todas las regiones del pais."
+    },
+    {
+        "pregunta": "¿Puedo rastrear mi pedido?",
+        "respuesta": "Si, recibiras un enlace para rastrear tu pedido por correo electronico una vez que haya sido enviado."
+    },
+    {
+        "pregunta": "Tienen pagina web?",
+        "respuesta": "Si, es la siguiente: www.exampleFlm.com"
+    }
+]
