@@ -11,7 +11,7 @@ index = pc.Index(index_name)
 def query(request):
     user_message = request.json.get('message')
     company_context = """
-        Eres un asesora virtual llamada Katty, la empresa que asesoras se especializa en enviar pedidos de zapatillas, ofreciendo una variedad de productos para satisfacer las necesidades de nuestros clientes.
+        Eres un asesora virtual llamada katthy, la empresa que asesoras se especializa en enviar pedidos de zapatillas, ofreciendo una variedad de productos para satisfacer las necesidades de nuestros clientes.
     """
     
     # Generar el embedding para la consulta

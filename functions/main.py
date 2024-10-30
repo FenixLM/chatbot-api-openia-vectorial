@@ -18,6 +18,19 @@ def upload_data_fn():
 
 
 @https_fn.on_request()
-def query_fn(request):
+def query_fn(request: https_fn.Request):
+    print(request)
+    print(os.getenv("FRONTEND_URL"))
+    cors_headers = {
+        'Access-Control-Allow-Origin': os.getenv("FRONTEND_URL"),
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+    }
+    
+    if request.method == 'OPTIONS':
+        return ('', 204, cors_headers)
+    
+    print(request)
+    # Procesa la solicitud principal
     response = query(request)
-    return jsonify(response)  
+    return (jsonify(response), 200, cors_headers)  
