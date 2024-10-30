@@ -4,13 +4,15 @@ import json
 import os
 from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 load_dotenv()
 
-# Configuraciones iniciales
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+
+
 openai.api_key = os.getenv("OPENIA_API_KEY")
-# pinecone.init(api_key='TU_API_KEY_PINECONE', environment='us-west1-gcp')
 index_name = os.getenv("PINECONE_INDEX_NAME")
 pc = Pinecone(
         api_key=os.getenv("PINECONE_API_KEY"),
@@ -28,7 +30,7 @@ if index_name not in pc.list_indexes().names():
 
 index = pc.Index(index_name)
 
-# Función para cargar datos de un archivo de texto
+# Función para cargar datos
 def load_data_from_json(file_path):
 
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -44,10 +46,10 @@ def generate_embeddings(text):
     return response.data[0].embedding
 
 # Endpoint para cargar datos a Pinecone
-@app.route('/upload', methods=['GET'])
+@app.route('/api/upload', methods=['GET'])
 def upload_data():
     # Cargar datos desde un archivo JSON
-    data = load_data_from_json('data/your_data.json')  # Cambia a la ruta de tu archivo JSON
+    data = load_data_from_json('data/your_data.json')
     
     # Procesar cada pregunta y respuesta
     for item in data:
@@ -66,23 +68,27 @@ def upload_data():
     return jsonify({'message': 'Datos cargados exitosamente'})
 
 # Endpoint para enviar un mensaje y obtener respuesta de GPT
-@app.route('/query', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 def query():
     user_message = request.json.get('message')
-    company_context = "Eres un asesor virtual llamado Charly, la empresa que asesoras se especializa en enviar pedidos de computación, ofreciendo una variedad de productos tecnológicos para satisfacer las necesidades de nuestros clientes, siempre respondes con un Hola y una despedida amigable diciendo tu nombre y  que estás aquí para ayudar."
+    company_context = """
+        Eres un asesora virtual llamada Katty, la empresa que asesoras se especializa en enviar pedidos de zapatillas, ofreciendo una variedad de productos para satisfacer las necesidades de nuestros clientes.
 
+        Katthy: ¡Hola! Soy Katty, tu asesora virtual. Estoy aquí para ayudarte con tus pedidos de tecnología. ¿En qué puedo asistirte hoy?
+    """
     # Generar el embedding para la consulta
     query_embedding = openai.embeddings.create(input=user_message, model="text-embedding-ada-002").data[0].embedding
     
 
     print("Embedding de la consulta:", query_embedding)
     print("index pinecone", index)
+
     # Realizar la búsqueda en Pinecone
     results = index.query(
-            vector=query_embedding,  # Usar keyword argument
-           top_k=3, 
-           include_metadata=True
-        )
+            vector=query_embedding,  
+            top_k=5, 
+            include_metadata=True
+    )
 
     faq_context_str = "\n".join([match['metadata']['respuesta'] for match in results['matches']])
     print(faq_context_str)
@@ -91,9 +97,10 @@ def query():
     gpt_prompt = f"{company_context}\n\n" \
                  f"base de datos de la cual te puedes guiar:\n{faq_context_str}\n\n" \
                  f"Pregunta: {user_message}\n\n" \
-                 "Por favor, responde a la pregunta de manera directa y proporciona información relevante sobre los plazos de devolución de productos, si está disponible."
+                 "Por favor, responde a la pregunta de manera directa y amigable."
 
     print("Mensaje a GPT:", gpt_prompt)
+
     # Obtener respuesta de GPT
     response = openai.chat.completions.create(
         model="gpt-3.5-turbo",  # O el modelo que prefieras
@@ -102,7 +109,8 @@ def query():
         ]
     )
     
-    return jsonify({'response': response.choices[0].message.content})
+    return jsonify({'text': response.choices[0].message.content, 
+                    'sender': 'Katthy'})
 
 if __name__ == '__main__':
     app.run(debug=True)
