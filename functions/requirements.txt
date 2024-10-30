@@ -1,3 +1,5 @@
+firebase_functions~=0.1.0
+firebase_functions~=0.1.0
 annotated-types==0.7.0
 anyio==4.6.2.post1
 blinker==1.8.2
